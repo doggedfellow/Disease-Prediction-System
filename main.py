@@ -1,24 +1,3 @@
-"""
-Disease Prediction System — Full Pipeline Runner
-====================================================
-Runs the Major Project's 10-step guidance end-to-end, in order, for both
-Diabetes and Heart Disease:
-
-  1. Define Problem            (see README.md)
-  2. Collect Data               -> src/data_loader.py
-  3. Preprocess Data            -> src/preprocessing.py
-  4. Feature Selection          -> src/feature_selection.py
-  5. Model Patterns (EDA)       -> src/eda.py
-  6. Train Models               -> src/train_models.py
-  7. Evaluate Performance       -> src/evaluate.py
-  8. Cross-Validation           -> src/cross_validation.py
-  9. Develop UI                 -> app.py (run separately: streamlit run app.py)
-  10. Document Ethics            -> README.md
-
-Usage:
-    python main.py
-"""
-
 import sys
 import os
 
@@ -44,15 +23,12 @@ def run_pipeline(disease_key: str, load_fn, preprocess_fn, target_col: str, labe
     print(f"  {label.upper()} PIPELINE")
     print("=" * 70)
 
-    # Step 2: Collect Data
     raw_df = load_fn()
 
-    # Step 3: Preprocess Data
     X, y, scaler, feature_cols = preprocess_fn(raw_df)
     joblib.dump({"scaler": scaler, "features": feature_cols},
                 os.path.join(MODEL_DIR, f"{disease_key}_scaler.joblib"))
 
-    # Step 4: Feature Selection
     print(f"\n--- Step 4: Feature Selection ({label}) ---")
     anova_scores = rank_features_anova(X, y)
     rf_scores = rank_features_importance(X, y)
@@ -61,7 +37,6 @@ def run_pipeline(disease_key: str, load_fn, preprocess_fn, target_col: str, labe
     print("Top features (RF importance):", rf_scores.head(6).index.tolist())
     print("Selected (union):", top_features)
 
-    # Step 5: Model Patterns / EDA
     print(f"\n--- Step 5: Exploratory Analysis ({label}) ---")
     raw_labeled = raw_df.copy()
     heat_path = plot_correlation_heatmap(
@@ -73,16 +48,13 @@ def run_pipeline(disease_key: str, load_fn, preprocess_fn, target_col: str, labe
     )
     print(f"Saved: {heat_path}\nSaved: {dist_path}")
 
-    # Step 6: Train Models
     print(f"\n--- Step 6: Train Models ({label}) ---")
     best_model, best_name, results = train_and_select_best(X, y, disease_key)
 
-    # Step 7: Evaluate Performance
     print(f"\n--- Step 7: Evaluate Performance ({label}) ---")
     fresh_model = type(best_model)(**best_model.get_params())
     evaluate_model(fresh_model, X, y, disease_key)
 
-    # Step 8: Cross-Validation
     print(f"\n--- Step 8: Cross-Validation ({label}) ---")
     fresh_model_cv = type(best_model)(**best_model.get_params())
     cross_validate_model(fresh_model_cv, X, y, disease_key)

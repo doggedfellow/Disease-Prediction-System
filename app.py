@@ -15,9 +15,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --------------------------------------------------
-# Theme
-# --------------------------------------------------
 
 if "theme" not in st.session_state:
     st.session_state.theme = "Light"
@@ -136,9 +133,6 @@ font-weight:600;
 unsafe_allow_html=True
 )
 
-# --------------------------------------------------
-# Sidebar
-# --------------------------------------------------
 
 with st.sidebar:
 
@@ -171,9 +165,6 @@ with st.sidebar:
         "It should not replace medical diagnosis."
     )
 
-# --------------------------------------------------
-# Header
-# --------------------------------------------------
 
 st.markdown(
 """
@@ -193,9 +184,6 @@ Predict Diabetes and Heart Disease risk using trained machine learning models.
 unsafe_allow_html=True,
 )
 
-# --------------------------------------------------
-# Load Models
-# --------------------------------------------------
 
 @st.cache_resource
 def load_artifacts(name):
@@ -236,9 +224,7 @@ def predict(name,values):
     proba = model.predict_proba(scaled)[0,1]
 
     return pred,proba,model_bundle["model_name"]
-    # --------------------------------------------------
-# Plotly Gauge
-# --------------------------------------------------
+    
 
 def radial_gauge_plot(probability, high_risk):
 
@@ -287,10 +273,6 @@ def radial_gauge_plot(probability, high_risk):
     return fig
 
 
-# --------------------------------------------------
-# Recommendation
-# --------------------------------------------------
-
 def recommendation(pred):
 
     if pred == 0:
@@ -328,9 +310,6 @@ Recommended:
     )
 
 
-# --------------------------------------------------
-# Result Dashboard
-# --------------------------------------------------
 
 def render_result(pred, probability, model_name, disease):
 
@@ -344,8 +323,6 @@ def render_result(pred, probability, model_name, disease):
 
     left,right = st.columns([1.2,1.8],gap="large")
 
-    # ---------------- LEFT ----------------
-
     with left:
 
         st.plotly_chart(
@@ -355,8 +332,6 @@ def render_result(pred, probability, model_name, disease):
                 "displayModeBar":False
             }
         )
-
-    # ---------------- RIGHT ----------------
 
     with right:
 
@@ -417,10 +392,7 @@ def render_result(pred, probability, model_name, disease):
         "This prediction is intended only as a screening aid and "
         "should not be considered a medical diagnosis."
     )
-    # ==================================================
-# DIABETES PAGE
-# ==================================================
-
+    
 if disease == "Diabetes":
 
     st.subheader("🩸 Diabetes Risk Assessment")
@@ -529,9 +501,7 @@ if disease == "Diabetes":
             model_name,
             "Diabetes",
         )
-        # ==================================================
-# HEART DISEASE PAGE
-# ==================================================
+       
 
 elif disease == "Heart Disease":
 
@@ -670,10 +640,6 @@ elif disease == "Heart Disease":
             "Heart Disease",
         )
 
-
-# ==================================================
-# FOOTER
-# ==================================================
 
 st.markdown("---")
 

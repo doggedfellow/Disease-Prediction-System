@@ -1,31 +1,3 @@
-"""
-Step 2: Collect Data
-=====================
-Loads the two patient-health datasets used by the Major Project:
-
-  1. PIMA Indians Diabetes Dataset
-     Source : UCI Machine Learning Repository (mirrored on Kaggle)
-     Link   : https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database
-
-  2. Heart Disease Dataset
-     Source : UCI Machine Learning Repository (mirrored on Kaggle)
-     Link   : https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset
-
-HOW TO GET THE REAL DATA
--------------------------
-1. Download `diabetes.csv` from the Kaggle link above and place it at
-   data/diabetes.csv
-2. Download `heart.csv` from the Kaggle link above and place it at
-   data/heart.csv
-
-If those files are not found (e.g. no internet access in this environment),
-this module falls back to a statistically-realistic SYNTHETIC dataset that
-mirrors the real schema, feature ranges, and class balance, so the rest of
-the pipeline (preprocessing -> feature selection -> training -> evaluation)
-can be built, tested, and demonstrated end-to-end. Swap in the real CSVs at
-any time -- no other code needs to change.
-"""
-
 import os
 import numpy as np
 import pandas as pd
@@ -43,13 +15,58 @@ HEART_COLUMNS = [
     "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"
 ]
 
+KAGGLE_DATASETS = {
+    "diabetes.csv": "uciml/pima-indians-diabetes-database",
+    "heart.csv": "johnsmith88/heart-disease-dataset",
+}
+
+
+def _try_kaggle_download(filename: str, verbose: bool = True) -> bool:
+    """Attempt to auto-download the real dataset from Kaggle into DATA_DIR.
+
+    Returns True if the file exists at DATA_DIR/filename after this call
+    (whether it was already there or just downloaded), False if the
+    download could not be completed (missing package, missing/invalid
+    token, network issue, etc.) so callers can fall back to synthetic data.
+    """
+    path = os.path.join(DATA_DIR, filename)
+    if os.path.exists(path):
+        return True
+
+    ref = KAGGLE_DATASETS.get(filename)
+    if ref is None:
+        return False
+
+    try:
+        import kaggle
+    except ImportError:
+        if verbose:
+            print(f"[data_loader] 'kaggle' package not installed -> "
+                  f"run 'pip install kaggle' to enable auto-download.")
+        return False
+
+    try:
+        os.makedirs(DATA_DIR, exist_ok=True)
+        kaggle.api.authenticate()
+        if verbose:
+            print(f"[data_loader] Downloading {ref} from Kaggle...")
+        kaggle.api.dataset_download_files(ref, path=DATA_DIR, unzip=True)
+    except Exception as e:
+        if verbose:
+            print(f"[data_loader] Kaggle auto-download failed ({e}). "
+                  f"Place kaggle.json in ~/.kaggle/ or download {filename} "
+                  f"manually into {DATA_DIR}.")
+        return False
+
+    return os.path.exists(path)
+
 
 def _synthetic_diabetes(n=768, seed=RANDOM_STATE) -> pd.DataFrame:
     """Generate a synthetic stand-in with the same 8 features + Outcome
     label as the real PIMA dataset (n=768 matches the original size)."""
     rng = np.random.default_rng(seed)
 
-    outcome = rng.binomial(1, 0.35, n)  # ~35% positive, matches real class balance
+    outcome = rng.binomial(1, 0.35, n)  
 
     glucose = np.where(
         outcome == 1,
@@ -84,9 +101,6 @@ def _synthetic_diabetes(n=768, seed=RANDOM_STATE) -> pd.DataFrame:
         rng.normal(70, 70, n),
     ).clip(0, 846)
 
-    # Real dataset stores biologically-impossible zeros for missing
-    # Glucose/BloodPressure/SkinThickness/Insulin/BMI -- reproduce that
-    # so the preprocessing step has real missing-value handling to do.
     for col, arr, missing_rate in [
         ("Glucose", glucose, 0.007),
         ("BloodPressure", blood_pressure, 0.045),
@@ -116,7 +130,7 @@ def _synthetic_heart(n=1025, seed=RANDOM_STATE) -> pd.DataFrame:
     label as the real UCI Heart Disease dataset."""
     rng = np.random.default_rng(seed)
 
-    target = rng.binomial(1, 0.51, n)  # near-balanced, matches real dataset
+    target = rng.binomial(1, 0.51, n) 
 
     age = np.where(
         target == 1, rng.normal(56, 8, n), rng.normal(53, 9, n)
@@ -155,13 +169,13 @@ def _synthetic_heart(n=1025, seed=RANDOM_STATE) -> pd.DataFrame:
 
 def load_diabetes_data(verbose: bool = True) -> pd.DataFrame:
     path = os.path.join(DATA_DIR, "diabetes.csv")
-    if os.path.exists(path):
+    if _try_kaggle_download("diabetes.csv", verbose=verbose):
         df = pd.read_csv(path)
         if verbose:
             print(f"[data_loader] Loaded REAL PIMA diabetes data from {path} ({len(df)} rows)")
         return df
     if verbose:
-        print("[data_loader] data/diabetes.csv not found -> using synthetic "
+        print("[data_loader] Could not obtain data/diabetes.csv -> using synthetic "
               "stand-in data. Download the real file from "
               "https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database "
               "and place it at data/diabetes.csv to use real data.")
@@ -170,13 +184,13 @@ def load_diabetes_data(verbose: bool = True) -> pd.DataFrame:
 
 def load_heart_data(verbose: bool = True) -> pd.DataFrame:
     path = os.path.join(DATA_DIR, "heart.csv")
-    if os.path.exists(path):
+    if _try_kaggle_download("heart.csv", verbose=verbose):
         df = pd.read_csv(path)
         if verbose:
             print(f"[data_loader] Loaded REAL heart disease data from {path} ({len(df)} rows)")
         return df
     if verbose:
-        print("[data_loader] data/heart.csv not found -> using synthetic "
+        print("[data_loader] Could not obtain data/heart.csv -> using synthetic "
               "stand-in data. Download the real file from "
               "https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset "
               "and place it at data/heart.csv to use real data.")

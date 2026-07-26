@@ -1,13 +1,3 @@
-"""
-Step 8: Cross-Validation
-===========================
-Validates that the reported performance isn't an artifact of one lucky
-train/test split. Uses Stratified 5-Fold CV (stratified so each fold keeps
-the same disease-positive ratio as the full dataset -- important for
-imbalanced medical data) and reports mean +/- std across folds for
-accuracy, F1, and ROC-AUC.
-"""
-
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, cross_validate
 
