@@ -16,21 +16,6 @@ st.set_page_config(
 )
 
 
-if "theme" not in st.session_state:
-    st.session_state.theme = "Light"
-
-LIGHT = """
---bg:#ffffff;
---surface:#ffffff;
---card:#fafafa;
---text:#111827;
---muted:#6b7280;
---border:#e5e7eb;
---accent:#2563eb;
---success:#16a34a;
---danger:#dc2626;
-"""
-
 DARK = """
 --bg:#0f172a;
 --surface:#111827;
@@ -43,7 +28,7 @@ DARK = """
 --danger:#ef4444;
 """
 
-theme_css = LIGHT if st.session_state.theme == "Light" else DARK
+theme_css = DARK
 
 st.markdown(
 f"""
@@ -144,18 +129,6 @@ with st.sidebar:
         "Prediction Model",
         ["Diabetes","Heart Disease"]
     )
-
-    st.divider()
-
-    theme = st.selectbox(
-        "Appearance",
-        ["Light","Dark"],
-        index=0 if st.session_state.theme=="Light" else 1
-    )
-
-    if theme != st.session_state.theme:
-        st.session_state.theme = theme
-        st.rerun()
 
     st.divider()
 
