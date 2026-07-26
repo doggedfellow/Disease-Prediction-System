@@ -1,191 +1,350 @@
-# Major Project: Disease Prediction System (Diabetes / Heart)
+# Disease Prediction System
 
-A machine-learning system that predicts a patient's risk of **Diabetes**
-and **Heart Disease** from clinical measurements, built following the
-project's 10-step guidance.
+A machine learning-based application that predicts the risk of **Diabetes** and **Heart Disease** using clinical and patient health information.
 
----
+This project was developed as a major project to explore the use of machine learning in healthcare for early risk assessment. Separate machine learning pipelines are used for each disease, with predictions provided through a Streamlit web application.
 
-## Step 1 — Define Medical Problem
-
-**Target diseases:** Diabetes and Heart Disease — two of the highest-burden
-chronic conditions globally, both diagnosable earlier and more cheaply from
-routine clinical measurements than from symptoms alone.
-
-**Problem framing:** two independent **binary classification** tasks —
-
-| Task | Positive class | Input |
-|---|---|---|
-| Diabetes screening | Patient has diabetes | 8 clinical measurements (glucose, BMI, age, etc.) |
-| Heart disease screening | Patient has heart disease | 13 clinical measurements (chest pain type, cholesterol, ECG results, etc.) |
-
-**Intended use:** an educational decision-support prototype that flags
-higher-risk patients for **further clinical testing** — not a diagnostic
-replacement for a physician (see Ethics section below).
+> **Disclaimer:** This project is intended for educational and research purposes only. It is not a medical diagnostic tool and should not replace professional medical advice or clinical testing.
 
 ---
 
-## Step 2 — Data
+## Features
 
-| | Diabetes | Heart Disease |
-|---|---|---|
-| **Dataset name** | PIMA Indians Diabetes Dataset | Heart Disease Dataset |
-| **Source** | UCI Machine Learning Repository | UCI Machine Learning Repository |
-| **Location** | Kaggle | Kaggle |
-| **Link** | https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database | https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset |
-| **Rows** | 768 patients | 1,025 patients |
-| **Features** | 8 (Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age) | 13 (age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal) |
-| **Label** | `Outcome` (0/1) | `target` (0/1) |
-
-**Getting the real data:** download `diabetes.csv` and `heart.csv` from
-the Kaggle links above and place them in `data/`. `src/data_loader.py`
-loads them automatically if present.
-
-**No internet access in this build environment:** since this project was
-assembled without web access, `src/data_loader.py` falls back to a
-**statistically-realistic synthetic dataset** matching each real dataset's
-schema, feature ranges, missing-value pattern, and class balance, so every
-step of the pipeline is fully runnable and testable right now. **Drop the
-real Kaggle CSVs into `data/` at any time — no other code changes
-needed** — and the pipeline will automatically switch to real data.
+* Diabetes risk prediction
+* Heart disease risk prediction
+* Separate ML models for each disease
+* Data preprocessing and missing-value handling
+* Feature selection
+* Exploratory data analysis (EDA)
+* Comparison of multiple ML algorithms
+* Model evaluation using multiple metrics
+* 5-fold stratified cross-validation
+* Interactive Streamlit web interface
+* Prediction probability/risk score
+* Evaluation visualizations
 
 ---
 
-## Step 3–8 — Pipeline
+## Technologies Used
 
-Run the whole thing in order with:
+* Python
+* Pandas
+* NumPy
+* Scikit-learn
+* Matplotlib
+* Seaborn
+* Streamlit
+
+---
+
+## Datasets
+
+The project uses two separate datasets.
+
+### Diabetes Dataset
+
+**Dataset:** PIMA Indians Diabetes Dataset
+
+* Rows: 768
+* Features: 8
+* Target: `Outcome`
+* Classes: 0 (No Diabetes), 1 (Diabetes)
+
+Features:
+
+`Pregnancies`, `Glucose`, `BloodPressure`, `SkinThickness`, `Insulin`, `BMI`, `DiabetesPedigreeFunction`, `Age`
+
+### Heart Disease Dataset
+
+**Dataset:** Heart Disease Dataset
+
+* Rows: 1,025
+* Features: 13
+* Target: `target`
+* Classes: 0 (No Heart Disease), 1 (Heart Disease)
+
+Features:
+
+`age`, `sex`, `cp`, `trestbps`, `chol`, `fbs`, `restecg`, `thalach`, `exang`, `oldpeak`, `slope`, `ca`, `thal`
+
+### Data Setup
+
+Place the datasets inside the `data/` directory:
+
+```text
+data/
+├── diabetes.csv
+└── heart.csv
+```
+
+The data loader automatically reads the files from this location.
+
+For development and testing, the project can also work with synthetic data that follows the structure of the original datasets. When using the real datasets, place the CSV files in the `data/` directory before training the models.
+
+---
+
+## Machine Learning Pipeline
+
+The project follows a complete machine learning workflow for both diseases.
+
+### 1. Data Preprocessing
+
+The raw datasets are cleaned and prepared before training. This includes:
+
+* Handling missing and invalid values
+* Replacing biologically unrealistic zero values where applicable
+* Median imputation
+* Outlier handling using the IQR method
+* Feature standardization
+
+Implemented in:
+
+```text
+src/preprocessing.py
+```
+
+### 2. Feature Selection
+
+Relevant features are identified using:
+
+* ANOVA F-test
+* Random Forest feature importance
+
+Implemented in:
+
+```text
+src/feature_selection.py
+```
+
+### 3. Exploratory Data Analysis
+
+EDA is performed to understand the data and identify patterns between different patient groups.
+
+The project generates:
+
+* Correlation heatmaps
+* Feature distribution plots
+* Class-based comparisons
+
+Visualizations are saved in the `outputs/` directory.
+
+Implemented in:
+
+```text
+src/eda.py
+```
+
+### 4. Model Training
+
+The following algorithms are trained and compared:
+
+* Logistic Regression
+* Random Forest
+* Gradient Boosting
+* Support Vector Machine (SVM)
+
+The best-performing model for each disease is selected based on validation ROC-AUC and saved for later use.
+
+Implemented in:
+
+```text
+src/train_models.py
+```
+
+### 5. Model Evaluation
+
+The trained models are evaluated using:
+
+* Accuracy
+* Precision
+* Recall / Sensitivity
+* Specificity
+* F1 Score
+* ROC-AUC
+* Confusion Matrix
+* ROC Curve
+
+Sensitivity and specificity are included because both are important when evaluating models for health-related screening.
+
+Implemented in:
+
+```text
+src/evaluate.py
+```
+
+### 6. Cross-Validation
+
+The project uses **5-fold stratified cross-validation** to evaluate model consistency across different subsets of the data.
+
+The results include the mean and standard deviation for important performance metrics.
+
+Implemented in:
+
+```text
+src/cross_validation.py
+```
+
+---
+
+## Running the Project
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd disease_prediction_system
+```
+
+### 2. Create a Virtual Environment
+
+```bash
+python -m venv venv
+```
+
+Activate it on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
+```
+
+### 4. Add the Datasets
+
+Place the required CSV files inside the `data/` folder:
+
+```text
+data/
+├── diabetes.csv
+└── heart.csv
+```
+
+### 5. Train the Models
+
+Run:
+
+```bash
 python main.py
 ```
 
-This executes, for **both** diseases:
+This runs the preprocessing, feature selection, EDA, model training, evaluation, and cross-validation pipeline.
 
-3. **Preprocess Data** (`src/preprocessing.py`) — imputes missing values
-   (the PIMA dataset encodes missing Glucose/BloodPressure/SkinThickness/
-   Insulin/BMI as biologically-impossible zeros; these are treated as NaN
-   and median-imputed per outcome group), caps outliers with the IQR
-   method, then standardizes all features.
-4. **Feature Selection** (`src/feature_selection.py`) — ranks features
-   with an ANOVA F-test and Random Forest importance, and keeps the union
-   of the top predictors from each.
-5. **Model Patterns / EDA** (`src/eda.py`) — correlation heatmaps and
-   class-conditional distribution plots of the top features, saved to
-   `outputs/`, to see how patient health-behavior patterns differ between
-   diseased and healthy groups.
-6. **Train Models** (`src/train_models.py`) — trains Logistic Regression,
-   Random Forest, Gradient Boosting, and SVM classifiers; keeps whichever
-   has the best validation ROC-AUC; saves it to `models/`.
-7. **Evaluate Performance** (`src/evaluate.py`) — reports accuracy,
-   precision, **sensitivity (recall)**, **specificity**, F1, ROC-AUC, and
-   the confusion matrix on a held-out test set, plus a saved ROC curve.
-   Sensitivity/specificity are reported explicitly because, in a screening
-   context, missing a true case (false negative) and raising a false
-   alarm (false positive) carry very different costs — accuracy alone
-   hides that tradeoff.
-8. **Cross-Validation** (`src/cross_validation.py`) — 5-fold **stratified**
-   cross-validation (stratified to preserve the disease-positive ratio in
-   every fold) reporting mean ± standard deviation for each metric, to
-   confirm results aren't an artifact of one lucky train/test split.
+Trained models are saved in:
 
-## Step 9 — Deploy UI
+```text
+models/
+```
+
+Generated plots and evaluation results are saved in:
+
+```text
+outputs/
+```
+
+### 6. Run the Web Application
+
+After training the models, start the Streamlit application:
 
 ```bash
 streamlit run app.py
 ```
 
-A Streamlit form lets a user enter patient values for either disease and
-returns a prediction with a probability score, using the models saved by
-`main.py` / `src/train_models.py`.
+The application allows users to enter patient information and receive a prediction for diabetes or heart disease.
 
 ---
-
-## Step 10 — Document System Design, Ethics & Limitations
-
-### System design summary
-- Two independent pipelines (diabetes, heart) sharing the same
-  architecture: load → preprocess → select features → explore →
-  train/select best model → evaluate → cross-validate → serve via UI.
-- Best model is chosen per-disease by validation ROC-AUC among four
-  candidate algorithms, then refit on all available data before being
-  saved for deployment.
-- All artifacts (scalers, trained models, plots) are versioned to disk
-  under `models/` and `outputs/` so the UI and evaluation stay consistent
-  with what was trained.
-
-### Ethical considerations
-- **Not a diagnostic device.** This is an educational prototype. A
-  positive/negative prediction must never be treated as a diagnosis — it
-  should, at most, prompt a conversation with a qualified clinician and
-  proper diagnostic testing.
-- **Training data limitations.** The PIMA dataset only includes female
-  patients of Pima Indian heritage aged 21+, and the heart disease dataset
-  reflects the demographics of the clinics that originally collected it.
-  A model trained on either does not necessarily generalize to other
-  sexes, ages, or populations — deploying it outside its training
-  population risks systematically biased predictions.
-- **Class imbalance and error costs.** Both datasets are imbalanced
-  (more healthy than diseased patients). In screening, a false negative
-  (telling a sick patient they're healthy) is typically far more harmful
-  than a false positive (recommending an unnecessary follow-up test) —
-  which is why this project reports sensitivity/specificity, not just
-  accuracy, and should be tuned/thresholded with that asymmetry in mind
-  before any real-world use.
-- **Privacy.** Any real deployment must handle patient data under
-  applicable health-privacy regulations (e.g. HIPAA/GDPR) — encrypted at
-  rest and in transit, with access controls and audit logging. This
-  prototype has none of that and should not be given real patient data.
-- **Synthetic-data caveat.** As noted in Step 2, the datasets bundled by
-  default in this environment are synthetic stand-ins with no real
-  patients. All reported metrics are for demonstration of the pipeline,
-  not a claim about real-world clinical accuracy. Metrics must be
-  re-measured on the real Kaggle datasets before drawing any conclusions.
-
-### Known limitations
-- Small dataset sizes (hundreds to low thousands of rows) limit how well
-  any model generalizes; a production system would need substantially
-  more, more diverse data.
-- No temporal/longitudinal patient data — each row is a single snapshot,
-  so the models cannot account for how a patient's health is trending.
-- No model explainability layer (e.g. SHAP) is included yet — clinicians
-  would reasonably want per-prediction feature attributions before
-  trusting a flagged case.
-- The UI performs no input validation against physiologically implausible
-  combinations of values.
-
----
-
-## Tools & Platforms
-
-- Python
-- Pandas, NumPy
-- Scikit-learn
-- Streamlit / Flask (UI)
-
-## Reference Links
-
-- Medical ML GitHub: https://github.com/krishnaik06/Disease-Prediction-ML
-- Healthcare Analytics GitHub: https://github.com/anishghose/Diabetes-Prediction
-- ML Healthcare GitHub: https://github.com/IBM/ai-healthcare-projects
 
 ## Project Structure
 
-```
+```text
 disease_prediction_system/
-├── data/                    # place diabetes.csv / heart.csv here (optional)
-├── models/                  # saved scalers + trained models (generated)
-├── outputs/                 # saved plots: heatmaps, distributions, ROC curves (generated)
+│
+├── data/
+│   ├── diabetes.csv
+│   └── heart.csv
+│
+├── models/
+├── outputs/
+│
 ├── src/
-│   ├── data_loader.py       # Step 2
-│   ├── preprocessing.py     # Step 3
-│   ├── feature_selection.py # Step 4
-│   ├── eda.py                # Step 5
-│   ├── train_models.py      # Step 6
-│   ├── evaluate.py          # Step 7
-│   └── cross_validation.py  # Step 8
-├── app.py                   # Step 9 (Streamlit UI)
-├── main.py                  # runs steps 2-8 end to end
+│   ├── data_loader.py
+│   ├── preprocessing.py
+│   ├── feature_selection.py
+│   ├── eda.py
+│   ├── train_models.py
+│   ├── evaluate.py
+│   └── cross_validation.py
+│
+├── app.py
+├── main.py
 ├── requirements.txt
-└── README.md                 # Steps 1 & 10
+└── README.md
 ```
+
+---
+
+## Ethical Considerations
+
+### Not a Diagnostic Tool
+
+The predictions generated by this application should not be considered a medical diagnosis. The system is designed as an educational machine learning project for demonstrating preliminary risk assessment.
+
+### Dataset Limitations
+
+The datasets have limitations in terms of size, demographics, and diversity. A model trained on these datasets may not perform equally well for every population.
+
+### False Positives and False Negatives
+
+Both types of prediction errors are important in healthcare applications. A false negative may cause a potentially serious case to be missed, while a false positive may lead to unnecessary medical testing.
+
+For this reason, the project reports sensitivity and specificity in addition to accuracy.
+
+### Privacy
+
+Any real-world healthcare application would require appropriate security measures to protect patient information, including secure data storage, access control, and compliance with applicable data protection regulations.
+
+This academic project should not be used with real patient data without appropriate authorization and security measures.
+
+---
+
+## Limitations
+
+* The datasets are relatively small compared with the data required for a production healthcare system.
+* The training data may not represent all populations and demographic groups.
+* The model uses a single set of patient measurements rather than historical health records.
+* The project does not currently include explainability methods such as SHAP or LIME.
+* The application does not fully validate whether every combination of user-entered values is physiologically realistic.
+* Model performance depends heavily on the quality and representativeness of the training data.
+* The system has not been clinically validated and should not be used for real medical decision-making.
+
+---
+
+## Future Improvements
+
+* Use larger and more diverse healthcare datasets
+* Add explainable AI techniques such as SHAP or LIME
+* Improve input validation
+* Test additional machine learning and ensemble models
+* Perform hyperparameter optimization
+* Add model performance comparison charts
+* Improve the user interface and prediction visualizations
+* Add secure database integration
+* Perform external validation using independent datasets
+
+---
+
+## References
+
+* PIMA Indians Diabetes Dataset — UCI Machine Learning Repository / Kaggle
+* Heart Disease Dataset — UCI Machine Learning Repository / Kaggle
+* Scikit-learn Documentation
+* Streamlit Documentation
+
+---
+
+## Disclaimer
+
+This project is developed for **educational and academic purposes**. The predictions generated by the system are not intended to diagnose, treat, or prevent any disease. Users should always consult qualified healthcare professionals for medical advice and diagnosis.
