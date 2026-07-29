@@ -1,8 +1,29 @@
+# Virtual Environment
 venv/
 .venv/
+
+# Python
 __pycache__/
-*.pyc
-.kaggle/
-kaggle.json
+*.py[cod]
+
+# Datasets
 data/
+
+# Trained Models
 models/
+
+# Generated Outputs
+outputs/
+
+# Environment Variables / API Keys
+.env
+kaggle.json
+.kaggle/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
